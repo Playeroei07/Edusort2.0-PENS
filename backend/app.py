@@ -6,6 +6,7 @@ import numpy as np
 import threading
 import signal
 import time
+import asyncio
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -133,9 +134,8 @@ async def websocket_endpoint(websocket: WebSocket):
                 
             height, width = img.shape[:2]
             
-            # Run YOLOv8 model inference
-            # verbose=False reduces logging noise in terminal
-            results = model(img, verbose=False)
+            # Run YOLOv8 model inference in a separate thread to prevent blocking the async event loop
+            results = await asyncio.to_thread(model, img, verbose=False)
             
             detections = []
             
@@ -243,8 +243,12 @@ async def generate_tts(text: str):
         return FileResponse(cache_path, media_type="audio/wav")
     
     try:
-        with wave.open(cache_path, 'wb') as wav_file:
-            piper_voice.synthesize_wav(text, wav_file)
+        # Run CPU-heavy TTS generation in a separate thread
+        def sync_tts():
+            with wave.open(cache_path, 'wb') as wav_file:
+                piper_voice.synthesize_wav(text, wav_file)
+                
+        await asyncio.to_thread(sync_tts)
         
         return FileResponse(cache_path, media_type="audio/wav")
     except Exception as e:

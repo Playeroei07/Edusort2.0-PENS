@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 
-export default function GameScreen({ 
-  activeLevel, 
-  onDetections, 
+export default function GameScreen({
+  activeLevel,
+  onDetections,
   confidenceThreshold,
-  gameStarted 
+  gameStarted
 }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -28,10 +28,10 @@ export default function GameScreen({
     setWsState('connecting');
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     // Handle development Vite proxy and direct port 8000
-    const wsHost = window.location.host.includes('3000') || window.location.host.includes('5173') 
-      ? 'localhost:8000' 
+    const wsHost = window.location.host.includes('3000') || window.location.host.includes('5173')
+      ? 'localhost:8000'
       : window.location.host;
-    
+
     const wsUrl = `${wsProtocol}//${wsHost}/ws`;
     console.log("[SortEdu WS] Connecting to:", wsUrl);
 
@@ -95,18 +95,21 @@ export default function GameScreen({
     stopCamera();
 
     try {
+      // Request the best available resolution from the user's webcam.
+      // 'ideal' means the browser will try to get 720p, but gracefully fall back
+      // to whatever the camera supports (480p, 360p, etc.) without throwing an error.
       const constraints = {
         video: {
-          width: { ideal: 640 },
-          height: { ideal: 480 },
+          width: { ideal: 1280, min: 320 },
+          height: { ideal: 720, min: 240 },
           facingMode: "user"
         },
         audio: false
       };
-      
+
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
-      
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         setCameraState('on');
@@ -150,18 +153,24 @@ export default function GameScreen({
   const sendFrame = () => {
     const video = videoRef.current;
     const ws = wsRef.current;
-    
+
     if (!video || !ws || ws.readyState !== WebSocket.OPEN) return;
-    
-    // Create off-screen canvas to grab JPEG blob
+
+    // Normalize all frames to 640x480 before sending to the backend.
+    // This ensures inference always matches the training resolution (imgsz=640),
+    // regardless of whether the user has a 480p, 720p, or 1080p webcam.
+    // It also keeps WebSocket bandwidth low (~30KB/frame) on all connections.
+    const SEND_WIDTH = 640;
+    const SEND_HEIGHT = 480;
+
     const offCanvas = document.createElement('canvas');
-    offCanvas.width = 640;
-    offCanvas.height = 480;
+    offCanvas.width = SEND_WIDTH;
+    offCanvas.height = SEND_HEIGHT;
     const ctx = offCanvas.getContext('2d');
-    
-    // Draw and flip horizontally to match video mirror
-    ctx.drawImage(video, 0, 0, 640, 480);
-    
+
+    // Draw and downscale to the fixed send resolution
+    ctx.drawImage(video, 0, 0, SEND_WIDTH, SEND_HEIGHT);
+
     offCanvas.toBlob((blob) => {
       if (blob && ws.readyState === WebSocket.OPEN) {
         blob.arrayBuffer().then((buffer) => {
@@ -175,11 +184,11 @@ export default function GameScreen({
   const drawDetections = (detections) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
+
     const ctx = canvas.getContext('2d');
     const width = canvas.width;
     const height = canvas.height;
-    
+
     ctx.clearRect(0, 0, width, height);
 
     // Draw sorting areas if level is 5
@@ -211,9 +220,9 @@ export default function GameScreen({
     // Draw objects
     detections.forEach(det => {
       if (det.confidence < confidenceThreshold) return;
-      
+
       const [x1, y1, x2, y2] = det.bbox;
-      
+
       // Mirror X coordinates because the video is mirrored (CSS transform: scaleX(-1))
       // But the canvas is NOT mirrored, so labels draw correctly!
       const drawX1 = (1 - x2) * width;
@@ -232,7 +241,7 @@ export default function GameScreen({
       ctx.strokeStyle = '#2c3e50'; // Outer outline
       ctx.lineWidth = 6;
       ctx.strokeRect(drawX1, drawY1, boxWidth, boxHeight);
-      
+
       ctx.strokeStyle = themeColor; // Main colored inner box
       ctx.lineWidth = 3;
       ctx.strokeRect(drawX1, drawY1, boxWidth, boxHeight);

@@ -30,8 +30,10 @@ class AudioSynth {
   }
 
   playBGM() {
-    if (!this.muted && this.bgMusic) {
-      // Reset to beginning and play
+    if (this.bgMusic) {
+      // Reset to beginning and play regardless of this.muted state.
+      // If muted is true, bgMusic.muted handles the silence.
+      // This ensures that if the user unmutes mid-game, the music resumes correctly.
       this.bgMusic.currentTime = 0;
       this.bgMusic.play().catch(e => console.warn("BGM autoplay blocked by browser: ", e));
     }

@@ -9,6 +9,8 @@ def main():
     print("This utility helps you capture images from your webcam to train")
     print("your custom YOLOv8 model for yellow bananas, red tomatoes, and")
     print("green tomatoes.")
+    print("\nCapture Resolution: 1280x720 (720p) for high-quality training data.")
+    print("  If your webcam doesn't support 720p, it will fallback gracefully.")
     print("\nInstructions:")
     print("  - Press '1' to save a frame for: YELLOW BANANA (pisang_kuning)")
     print("  - Press '2' to save a frame for: RED TOMATO (tomat_merah)")
@@ -42,6 +44,15 @@ def main():
     if not cap.isOpened():
         print("Error: Could not open webcam. Make sure it's plugged in and not in use by another app.")
         return
+
+    # Request 720p resolution for high-quality dataset images.
+    # If the webcam doesn't support it, OpenCV will use the closest available resolution.
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+
+    actual_width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    actual_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    print(f"[Camera] Requested: 1280x720 | Actual: {actual_width}x{actual_height}")
 
     # Window setting
     window_name = "SortEdu Dataset Collector"

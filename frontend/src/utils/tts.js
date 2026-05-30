@@ -6,6 +6,15 @@ class SpeechAssist {
     this.rate = 1.1; // Diperlambat sedikit agar terdengar lebih jelas
   }
 
+  // Mendapatkan base URL untuk API TTS yang dinamis (support Vite dev & Production server)
+  getApiBaseUrl() {
+    const protocol = window.location.protocol;
+    const host = window.location.host.includes('3000') || window.location.host.includes('5173') 
+      ? 'localhost:8000' 
+      : window.location.host;
+    return `${protocol}//${host}/api/tts`;
+  }
+
   setEnabled(enabled) {
     this.enabled = enabled;
     if (!enabled) {
@@ -27,8 +36,9 @@ class SpeechAssist {
     this.cancel();
 
     try {
-      // Menggunakan backend lokal FastAPI Piper TTS (Offline AI)
-      const url = `http://localhost:8000/api/tts?text=${encodeURIComponent(text)}`;
+      // Menggunakan backend lokal FastAPI Piper TTS secara dinamis
+      const baseUrl = this.getApiBaseUrl();
+      const url = `${baseUrl}?text=${encodeURIComponent(text)}`;
 
       this.audio = new Audio(url);
       this.audio.playbackRate = this.rate;
@@ -44,7 +54,8 @@ class SpeechAssist {
 
   preload(text) {
     if (!this.enabled) return;
-    const url = `http://localhost:8000/api/tts?text=${encodeURIComponent(text)}`;
+    const baseUrl = this.getApiBaseUrl();
+    const url = `${baseUrl}?text=${encodeURIComponent(text)}`;
     // Panggil fetch agar backend memproses/mengembalikan cache ke browser secara diam-diam
     fetch(url).catch(() => { });
   }

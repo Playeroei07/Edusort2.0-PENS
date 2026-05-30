@@ -46,37 +46,47 @@ Project ini sudah dilengkapi script otomatis untuk mengunduh modul Python, mengo
 
 ```text
 SortEdu/
-├── README.md                 # Petunjuk penggunaan utama
+├── .gitignore                # Aturan pengecualian file Git
 ├── CHANGELOG.md              # Riwayat pembaruan sistem terbaru
+├── README.md                 # Petunjuk penggunaan utama
+├── Toybox Riot.mp3           # (BGM Cadangan/Duplikat di Root)
+├── autorun.bat               # Shortcut Windows untuk mengeksekusi run.py
 ├── requirements.txt          # Daftar pustaka Python backend
 ├── run.py                    # Script startup otomatis sekali klik
-├── autorun.bat               # Shortcut Windows untuk mengeksekusi run.py
 │
 ├── backend/                  # MESIN AI & SERVER
 │   ├── app.py                # Server FastAPI & WebSocket deteksi YOLOv8
 │   ├── dist/                 # Folder hasil kompilasi frontend (Sistem Front-End Mandiri)
-│   └── model/
-│       └── custom_yolo.pt    # File otak pendeteksi buah kustom (opsional)
+│   ├── tts_cache/            # Folder penyimpanan cache suara robot (Otomatis)
+│   └── model/                # Folder khusus pemrosesan & training YOLO
+│       ├── README.md         # Panduan melatih AI Custom
+│       ├── collect_data.py   # Script pengumpul dataset kamera
+│       ├── train.py          # Script pelatihan AI pintar
+│       ├── custom_yolo.pt    # File otak pendeteksi buah kustom (opsional)
+│       └── piper/            # Folder model AI Suara (Otomatis terunduh)
 │
-└── frontend/                 # SUMBER DESAIN & ANTARMUKA (Hanya untuk Development)
-    ├── node_modules/         # Folder raksasa tempat penyimpanan pustaka Javascript (tersembunyi/jangan dikirim)
-    ├── package.json          # Library & dependencies React
-    ├── vite.config.js        # Konfigurasi compiler Vite yang baru
-    ├── index.html            # File HTML utama (memuat Google Fonts kustom)
-    ├── public/               # File aset statis
-    │   └── Toybox Riot.mp3   # Musik Latar (BGM)
-    └── src/
-        ├── main.jsx          # Entry point React
-        ├── App.jsx           # Logika utama game, routing level, dan layout
-        ├── index.css         # Desain UI tema kartun & sistem variabel HSL
-        ├── components/       # Kepingan UI (Lego)
-        │   ├── GameScreen.jsx   # Stream webcam, WebSocket, & kotak pembatas
-        │   ├── ScoreBoard.jsx   # Papan skor pemain dan animasi Robot
-        │   ├── ActivityLog.jsx  # Chatbox log game
-        │   └── ControlPanel.jsx # Menu aksesibilitas & tombol Graceful Shutdown
-        └── utils/            # Modul Fungsionalitas Ekstra
-            ├── audio.js         # Sintesis suara Web Audio API & Pemutar BGM
-            └── tts.js           # Penghubung WebSocket ke backend Piper TTS
+├── frontend/                 # SUMBER DESAIN & ANTARMUKA (Hanya untuk Development)
+│   ├── node_modules/         # Folder dependensi Javascript (tersembunyi/di-ignore)
+│   ├── package-lock.json     # Kunci versi dependensi Node.js
+│   ├── package.json          # Library & dependencies React
+│   ├── vite.config.js        # Konfigurasi compiler Vite yang baru
+│   ├── index.html            # File HTML utama (memuat Google Fonts kustom)
+│   ├── public/               # File aset statis
+│   │   └── Toybox_Riot.mp3   # Musik Latar (BGM) Utama
+│   └── src/                  # Kode sumber program antarmuka
+│       ├── main.jsx          # Entry point React
+│       ├── App.jsx           # Logika utama game, routing level, dan layout
+│       ├── index.css         # Desain UI tema kartun & sistem variabel HSL
+│       ├── components/       # Kepingan UI (Lego)
+│       │   ├── GameScreen.jsx   # Stream webcam, WebSocket, & kotak pembatas
+│       │   ├── ScoreBoard.jsx   # Papan skor pemain dan animasi Robot
+│       │   ├── ActivityLog.jsx  # Chatbox log game
+│       │   └── ControlPanel.jsx # Menu aksesibilitas & tombol Graceful Shutdown
+│       └── utils/            # Modul Fungsionalitas Ekstra
+│           ├── audio.js         # Sintesis suara Web Audio API & Pemutar BGM
+│           └── tts.js           # Penghubung WebSocket ke backend Piper TTS
+│
+└── runs/                     # Log hasil pelatihan YOLOv8 (Otomatis)
 ```
 
 ---
